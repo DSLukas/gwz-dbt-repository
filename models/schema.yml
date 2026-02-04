@@ -12,17 +12,23 @@ sources:
         columns:
           - name: products_id
             description: unique identifier of each product, primary key of the table
-          - name: purchase_price
+            tests:
+              - unique
+              - not_null
+          - name: purchse_price
             description: purchase cost of the product 
       - name: sales
         description: orders and revenues, /!\ has no primary key
         identifier: raw_gwz_sales
+        tests:
+          - unique:
+            column_name: "(orders_id || '-' || pdt_id)"
         columns:
           - name: date_date
             description: date of the order
           - name: orders_id
             description: ID of the order, /!\ an order with several items will have several rows so it's not a primary key
-          - name: products_id
+          - name: pdt_id
             description: ID of the product, foreign key with the product table
           - name: revenue
             description: revenue from that item in the order
@@ -34,8 +40,13 @@ sources:
         columns:
           - name: orders_id
             description: ID of the order corresponding to the shipping info, primary key to the the table
+            tests:
+              - unique
+              - not_null
           - name: shipping_fee
             description: shipping fee added to the order and paid by the customer, to be added to the revenue
+          - name: shipping_fee_1
+            description: same data as shipping_fee - can be ignored
           - name: logcost
             description: cost of the storage
           - name: ship_cost
