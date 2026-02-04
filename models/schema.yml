@@ -22,7 +22,7 @@ sources:
         identifier: raw_gwz_sales
         tests:
           - unique:
-            column_name: "(orders_id || '-' || pdt_id)"
+             column_name: "(orders_id || '-' || pdt_id)"
         columns:
           - name: date_date
             description: date of the order
