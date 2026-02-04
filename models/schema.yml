@@ -7,11 +7,36 @@ sources:
     schema: gwz_raw_data
     tables: 
       - name: product
-        description: products prices
+        description: products purchase prices identified by product_id
         identifier: raw_gwz_product
+        columns:
+          - name: products_id
+            description: unique identifier of each product, primary key of the table
+          - name: purchase_price
+            description: purchase cost of the product 
       - name: sales
-        description: orders and revenues
+        description: orders and revenues, /!\ has no primary key
         identifier: raw_gwz_sales
+        columns:
+          - name: date_date
+            description: date of the order
+          - name: orders_id
+            description: ID of the order, /!\ an order with several items will have several rows so it's not a primary key
+          - name: products_id
+            description: ID of the product, foreign key with the product table
+          - name: revenue
+            description: revenue from that item in the order
+          - name: quantity
+            description: quantity of product ordered
       - name: ship
         description: shipping fee and cost
         identifier: raw_gwz_ship
+        columns:
+          - name: orders_id
+            description: ID of the order corresponding to the shipping info, primary key to the the table
+          - name: shipping_fee
+            description: shipping fee added to the order and paid by the customer, to be added to the revenue
+          - name: logcost
+            description: cost of the storage
+          - name: ship_cost
+            description: cost of the shipping
