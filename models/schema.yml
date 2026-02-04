@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: raw_data
+    description: dataset of GreenWeez, French online groceries for organic products
+    loader: bigquery
+    schema: gwz_raw_data
+    tables: 
+      - name: product
+        description: products prices
+        identifier: raw_gwz_product
+      - name: sales
+        description: orders and revenues
+        identifier: raw_gwz_sales
+      - name: ship
+        description: shipping fee and cost
+        identifier: raw_gwz_ship
