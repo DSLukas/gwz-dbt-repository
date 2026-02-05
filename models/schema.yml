@@ -64,6 +64,27 @@ sources:
           - name: ship_cost
             description: cost of the shipping
 
+        # Table 4 : Adwords campaign costs and perf
+
+      - name: adwords
+        identifier: raw_gwz_adwords
+        description: "costs and performances of the AdWords campaigns"
+
+        # Table 5 : Bing costs campaign costs and perf
+      - name: bing
+        identifier: raw_gwz_bing
+        description: "costs and performances of the Bing campaigns"
+
+         # Table 6 : Criteo costs campaign costs and perf
+      - name: criteo
+        identifier: raw_gwz_criteo
+        description: "costs and performances of the Criteo campaigns"
+
+        # Table 7 : Facebook costs campaign costs and perf
+      - name: facebook
+        identifier: raw_gwz_facebook
+        description: "costs and performances of the Facebook campaigns"
+
 # =================================================================================
 # 2. Models : Then, on documente et teste les tables créées via dbt (Staging, Intermediate, Marts)
 # =================================================================================
