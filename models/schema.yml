@@ -105,6 +105,19 @@ models:
   - name: stg_raw_data__ship
     description: select * beside shipping_fee_1 and CAST ship_cost as a FLOAT64
 
+  - name: stg_raw_data__adwords
+    description: "select * and cast ads_cost as a FLOAT64 and campgn_name renamed as campaign_name"
+
+  - name: stg_raw_data__bing
+    description: "select * and cast ads_cost as a FLOAT64 and campgn_name renamed as campaign_name"
+
+  - name: stg_raw_data__criteo
+    description: "select * and cast ads_cost as a FLOAT64 and campgn_name renamed as campaign_name"
+
+  - name: stg_raw_data__facebook
+    description: "select * and cast ads_cost as a FLOAT64 and campgn_name renamed as campaign_name"
+
+
 # =================================================================================
 # B. Intermediate Models - calculations / Aggregations / JOINS
 # =================================================================================
