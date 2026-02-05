@@ -1,0 +1,137 @@
+version: 2
+# =================================================================================
+# 1. Sources : en premier, on déclare les données source pour les identifier, les décrire et conduire des tests si nécessaire 
+# =================================================================================
+
+sources:
+  - name: raw_data                    # alias utilisé dans le code
+    schema: gwz_raw_data              # nom du dataset dans la warehouse (BigQuery ici)
+    database: iconic-reactor-399514   # ID du project dans la warehouse
+    loader: bigquery                  # data warehouse connectée
+    description: dataset of GreenWeez, French online groceries for organic products
+    
+    tables:
+    # Table 1 : Products 
+      - name: product                 # alias. [i] Si name = identifier alors pas besoin de préciser l'identifier.
+        identifier: raw_gwz_product   # nom de la table dans BQ
+        description: products purchase prices identified by product_id
+        columns:
+          - name: products_id
+            description: unique identifier of each product, primary key of the table
+            tests:                    # pour tester que c'est bien une pk, on stoppe en cas de données corrompues à la source
+              - unique
+              - not_null
+          - name: purchse_price
+            description: purchase cost of the product 
+
+      # Table 2 : Sales
+      - name: sales                   # alias
+        identifier: raw_gwz_sales     # nom de la table dans BQ
+        description: orders and revenues, /!\ has no primary key
+        tests:                        # effectué avant description des colonnes car combine 2 colonnes
+          - unique:                   # pk créée avec colomne orders_id + products_id
+             column_name: "(orders_id || '-' || pdt_id)"    
+        columns:
+          - name: date_date
+            description: date of the order
+          - name: orders_id
+            description: ID of the order, /!\ an order with several items will have several rows so it's not a primary key
+          - name: pdt_id
+            description: ID of the product, foreign key with the product table
+          - name: revenue
+            description: revenue from that item in the order. revenue = quantity * selling price (that we don't have but we can obtain, if necessary)
+            tests:
+              - not_null              # revenue ne devrait pas être nul 
+          - name: quantity
+            description: quantity of product ordered
+            
+      # Table 3 : Shipping
+      - name: ship                    # alias
+        identifier: raw_gwz_ship      # nom de la table dans BQ
+        description: shipping fee and cost
+        columns:
+          - name: orders_id
+            description: ID of the order corresponding to the shipping info, primary key to the the table
+            tests:                    # pour tester que c'est bien une pk
+              - unique
+              - not_null
+          - name: shipping_fee
+            description: shipping fee added to the order and paid by the customer, to be added to the revenue
+          - name: shipping_fee_1
+            description: same data as shipping_fee - can be ignored
+          - name: logcost
+            description: cost of the storage
+          - name: ship_cost
+            description: cost of the shipping
+
+# =================================================================================
+# 2. Models : Then, on documente et teste les tables créées via dbt (Staging, Intermediate, Marts)
+# =================================================================================
+
+models:
+  
+# =================================================================================
+# A. Staging Models - cleaning and naming
+# almost everything is already written in sources, here we'll describe what we've done to the sources
+# =================================================================================
+
+  - name: stg_raw_data__sales
+    description: select * and rename column pdt_id as products_id
+
+  - name: stg_raw_data__product
+    description: select * and cast purchse_price as a FLOAT64 and rename as purchase_price 
+
+  - name: stg_raw_data__ship
+    description: select * beside shipping_fee_1 and CAST ship_cost as a FLOAT64
+
+# =================================================================================
+# B. Intermediate Models - calculations / Aggregations / JOINS
+# =================================================================================
+
+  - name: int_sales_margin
+    description: calcul de la marge produit et du coût d'achat pour chaque ligne, ajout de 2 colonnes
+    columns:
+      - name: purchase_cost
+        description: quantity * purchase_price
+      - name: margin
+        description: revenue - (quantity * purchase_price)
+
+  - name: int_orders_margin
+    description: aggregation au niveau de l'order
+    columns:
+      - name: orders_id   # vérification de pk
+        tests:    
+          - unique
+          - not_null
+
+  - name: int_orders_ops
+    description: calcul de la marge opérationnelle en allant chercher les infos du coût logistique dans ship
+    columns:
+      - name: orders_id   # vérification de pk
+        tests:
+          - unique
+          - not_null
+      - name: ops_margin
+        description: margin + Shipping_fee - (logcost + ship_cost)
+      - name: log_cost
+        description: logcost in ship renamed as log_cost
+
+# =================================================================================
+# C. Marts Models - final table to be used in the dashboard
+# =================================================================================
+
+  - name: finance_days
+    description: Finance KPIs aggregated per day
+    columns:
+      - name: date_date
+        description: day observed
+        tests:          # final table, it's very important to have clean data so we check the pk on the date
+          - unique
+          - not_null
+      - name: daily_transactions
+        description: nombre de commandes par jour
+      - name: daily_revenue
+        description: CA du jour
+      - name: avg_basket
+        description: panier du jour moyen
+
