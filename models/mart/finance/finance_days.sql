@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+
 
 WITH daily_orders AS
 (
