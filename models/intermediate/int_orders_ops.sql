@@ -4,6 +4,7 @@ SELECT
     ROUND (om.margin + ship.shipping_fee - (ship.logcost + ship.ship_cost), 2) AS ops_margin,
     om.quantity,
     om.revenue,
+    om.purchase_cost,
     om.margin,
     ship.shipping_fee,
     ship.ship_cost,
